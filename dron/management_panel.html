@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - AI Drone</title>
+    <link rel="stylesheet" href="management_panel.css">
+    <script defer src="management_panel.js"></script>
+</head>
+<body>
+    <header>
+        <h1>👥 User Management</h1>
+        <button id="darkModeToggle">🌙 Dark Mode</button>
+    </header>
+
+    <div class="container">
+        <!-- Add New User -->
+        <section class="add-user">
+            <h2>➕ Add New User</h2>
+            <input type="text" id="userName" placeholder="Enter Name">
+            <select id="userRole">
+                <option value="admin">Admin</option>
+                <option value="user">Regular User</option>
+            </select>
+            <button id="addUser">Add User</button>
+        </section>
+
+        <!-- User List -->
+        <section class="user-list">
+            <h2>📋 User List</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="userTable">
+                    <!-- Users will be dynamically added here -->
+                </tbody>
+            </table>
+        </section>
+    </div>
+</body>
+</html>

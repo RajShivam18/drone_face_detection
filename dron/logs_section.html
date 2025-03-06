@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Drone Logs & Reports</title>
+    <link rel="stylesheet" href="logs_section.css">
+    <script defer src="logs_section.js"></script>
+</head>
+<body>
+    <header>
+        <h1>🚀 AI Drone Control Center</h1>
+    </header>
+
+    <section id="logs" class="section">
+        <h2>📜 Logs & Reports</h2>
+
+        <h3>📸 Detected Faces</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Face ID</th>
+                    <th>Confidence</th>
+                    <th>Action</th>
+                    <th>Snapshot</th>
+                </tr>
+            </thead>
+            <tbody id="faceLog">
+                <!-- Data will be added dynamically -->
+            </tbody>
+        </table>
+
+        <h3>🎮 Drone Commands History</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Command</th>
+                    <th>User</th>
+                    <th>GPS</th>
+                </tr>
+            </thead>
+            <tbody id="commandLog">
+                <!-- Data will be added dynamically -->
+            </tbody>
+        </table>
+
+        <h3>⚠️ Alerts & Warnings</h3>
+        <ul id="alerts">
+            <!-- Alerts will be added dynamically -->
+        </ul>
+    </section>
+</body>
+</html>
+

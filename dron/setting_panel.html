@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Model Settings - Drone AI</title>
+    <link rel="stylesheet" href="setting_panel.css">
+    <script defer src="setting_panel.js"></script>
+</head>
+<body>
+    <header>
+        <h1>🤖 AI Model Settings</h1>
+        <button id="darkModeToggle">🌙 Dark Mode</button>
+    </header>
+
+    <div class="container">
+        <!-- Face Recognition Threshold -->
+        <section>
+            <h2>🔍 Face Recognition Threshold</h2>
+            <input type="range" id="faceThreshold" min="0.1" max="1" step="0.01" value="0.5">
+            <span id="thresholdValue">0.5</span>
+        </section>
+
+        <!-- Tracking Speed -->
+        <section>
+            <h2>🚀 Tracking Speed</h2>
+            <select id="trackingSpeed">
+                <option value="slow">Slow</option>
+                <option value="medium" selected>Medium</option>
+                <option value="fast">Fast</option>
+            </select>
+        </section>
+
+        <!-- Detection Mode -->
+        <section>
+            <h2>📸 Detection Mode</h2>
+            <label><input type="radio" name="detectionMode" value="face" checked> Face Only</label>
+            <label><input type="radio" name="detectionMode" value="body"> Full-Body</label>
+            <label><input type="radio" name="detectionMode" value="both"> Both</label>
+        </section>
+
+        <!-- Drone Behavior -->
+        <section>
+            <h2>🛰️ Drone Behavior</h2>
+            <label><input type="checkbox" id="followMode"> Follow Mode</label>
+            <label><input type="checkbox" id="autoAdjust"> Auto Adjustments</label>
+        </section>
+
+        <!-- Data Logging -->
+        <section>
+            <h2>📜 Data Logging & Reports</h2>
+            <label><input type="checkbox" id="loggingToggle"> Enable AI Logs</label>
+        </section>
+
+        <!-- Alerts & Notifications -->
+        <section>
+            <h2>🚨 Alerts & Notifications</h2>
+            <input type="text" id="alertMessage" placeholder="Enter Custom Warning">
+            <button id="setAlert">Set Alert</button>
+        </section>
+    </div>
+</body>
+</html>

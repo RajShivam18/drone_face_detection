@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futuristic AI Drone Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script defer src="dashboard.js"></script>
+    <script defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
+</head>
+<body>
+
+    <header>
+        <h1>🚀 AI Drone Control Center</h1>
+    </header>
+
+    <nav>
+        <button onclick="switchSection('live-feed')">📡 Live Feed</button>
+        <button onclick="switchSection('controls')">🎮 Controls</button>
+        <button onclick="switchSection('status')">📊 Status</button>
+        <button onclick="switchSection('map')">🗺️ Flight Path</button>
+        <button onclick="switchSection('ai-settings')">🤖 AI Settings</button>
+        <button onclick="switchSection('logs')">📜 Logs</button>
+    </nav>
+
+    <div class="container">
+        <section id="live-feed" class="section">
+            <h2>📡 Live Drone Feed</h2>
+            <video id="video" autoplay playsinline></video>
+            <div class="overlay">🔍 AI Recognition Active</div>
+        </section>
+
+        <section id="controls" class="section">
+            <h2>🎮 Drone Controls</h2>
+            <button onclick="sendCommand('takeoff')">🛫 Take Off</button>
+            <button onclick="sendCommand('land')">🛬 Land</button>
+            <button onclick="sendCommand('follow')">🚶 Follow Mode</button>
+            <button onclick="sendCommand('stop')">⏹ Stop</button>
+            <button class="emergency" onclick="sendCommand('emergency')">⚠️ Emergency Stop</button>
+        </section>
+
+        <section id="status" class="section">
+            <h2>📊 Drone Status</h2>
+            <p><strong>🔋 Battery:</strong> <span id="battery">100%</span></p>
+            <p><strong>🚀 Flight Mode:</strong> <span id="mode">Idle</span></p>
+            <p><strong>💨 Speed:</strong> <span id="speed">0 m/s</span></p>
+            <p><strong>📍 GPS Position:</strong> <span id="gps">N/A</span></p>
+        </section>
+
+        <section id="map" class="section">
+            <h2>🗺️ Flight Path Tracking</h2>
+            <div id="map"></div>
+        </section>
+
+        <section id="ai-settings" class="section">
+            <h2>🤖 AI Model Settings</h2>
+            <label>Face Recognition Threshold:</label>
+            <input type="range" id="faceThreshold" min="0" max="1" step="0.01" value="0.5">
+            <span id="thresholdValue">0.5</span>
+
+            <label>Tracking Speed:</label>
+            <select id="trackingSpeed">
+                <option value="slow">Slow</option>
+                <option value="medium" selected>Medium</option>
+                <option value="fast">Fast</option>
+            </select>
+
+            <label>Detection Mode:</label>
+            <select id="detectionMode">
+                <option value="face">Face</option>
+                <option value="body">Full-Body</option>
+                <option value="both">Both</option>
+            </select>
+        </section>
+
+        <section id="logs" class="section">
+            <h2>📜 Logs & Reports</h2>
+            <ul id="logList"></ul>
+        </section>
+    </div>
+
+</body>
+</html>
