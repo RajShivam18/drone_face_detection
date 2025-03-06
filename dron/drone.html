@@ -1,0 +1,44 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futuristic Drone Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="logic.js"></script>
+    <iframe src="body_recognition.html" width="100%" height="600px" frameborder="0"></iframe>
+    <iframe src="flight_tracking.html" width="100%" height="600px" frameborder="0"></iframe>
+    <iframe src="admin_panel.html" width="100%" height="600px" frameborder="0"></iframe>
+
+</head>
+<body>
+    <header>
+        <h1>🚀 Drone Control Center</h1>
+    </header>
+    
+    <div class="container">
+        <div class="video-container">
+            <video id="video" autoplay playsinline></video>
+            <div class="overlay">🔍 Face Detection Active</div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" onclick="sendCommand('takeoff')">🛫 Take Off</button>
+            <button class="btn" onclick="sendCommand('land')">🛬 Land</button>
+            <button class="btn" onclick="sendCommand('follow')">🚶 Follow Mode</button>
+            <button class="btn" onclick="sendCommand('stop')">⏹ Stop</button>
+            <button class="btn emergency" onclick="sendCommand('emergency')">⚠️ Emergency Stop</button>
+        </div>
+        
+        <div class="status">
+            <h2>📡 Drone Status</h2>
+            <p><strong>🔋 Battery:</strong> <span id="battery">100%</span></p>
+            <p><strong>🚀 Flight Mode:</strong> <span id="mode">Idle</span></p>
+            <p><strong>💨 Speed:</strong> <span id="speed">0 m/s</span></p>
+            <p><strong>📍 GPS Position:</strong> <span id="gps">N/A</span></p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone Flight Tracking</title>
+    <link rel="stylesheet" href="flight_tracking.css">
+    <script defer src="flight_tracking_logic.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+</head>
+<body>
+    <header>
+        <h1>🚀 Drone Flight Path Tracking</h1>
+        <button id="darkModeToggle">🌙 Dark Mode</button>
+    </header>
+    
+    <div class="main-container">
+        <div class="map-container">
+            <div id="map"></div>
+            <button id="trackFlight">📍 Start Tracking</button>
+        </div>
+        
+        <div class="flight-info">
+            <h2>📜 Flight History</h2>
+            <ul id="flightList"></ul>
+        </div>
+    </div>
+</body>
+</html>

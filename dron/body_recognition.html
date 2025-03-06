@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Face & Body Recognition</title>
+    <link rel="stylesheet" href="body_style.css">
+    <script defer src="body_logic.js"></script>
+</head>
+<body>
+    <header>
+        <h1>🔍 AI Face & Body Recognition</h1>
+    </header>
+    
+    <div class="container">
+        <div class="video-container">
+            <video id="video" autoplay playsinline></video>
+            <div class="overlay">Scanning for Faces...</div>
+        </div>
+        
+        <div class="search">
+            <input type="text" id="searchBox" placeholder="Search by Name or ID..." onkeyup="filterResults()">
+        </div>
+        
+        <div class="detected-list">
+            <h2>📋 Detected Faces</h2>
+            <ul id="faceList">
+                <!-- Dynamically Generated List -->
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

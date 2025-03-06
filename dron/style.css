@@ -1,0 +1,71 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  text-align: center;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  color: white;
+  margin: 0;
+  padding: 0;
+}
+header {
+  background: rgba(0, 123, 255, 0.8);
+  padding: 15px;
+  font-size: 24px;
+  font-weight: bold;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 90vh;
+}
+.video-container {
+  position: relative;
+  width: 80%;
+  max-width: 600px;
+  background: black;
+  border-radius: 10px;
+  overflow: hidden;
+}
+video {
+  width: 100%;
+  border-radius: 10px;
+}
+.overlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+.controls {
+  margin: 20px 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.btn {
+  padding: 12px 20px;
+  font-size: 18px;
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  background: #007bff;
+  color: white;
+  transition: 0.3s;
+}
+.btn:hover {
+  background: #0056b3;
+}
+.emergency {
+  background: red;
+}
+.status {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  width: 50%;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
