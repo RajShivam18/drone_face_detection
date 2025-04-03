@@ -4,30 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Face & Body Recognition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="body_style.css">
-    <script defer src="body_logic.js"></script>
 </head>
 <body>
     <header>
-        <h1>🔍 AI Face & Body Recognition</h1>
+        <div>🔍 AI Face & Body Recognition</div>
+        <div class="header-icons">
+            <span id="liveStatus" class="status-indicator">● LIVE</span>
+            <span id="detectionCount">0 Detections</span>
+        </div>
     </header>
     
     <div class="container">
-        <div class="video-container">
-            <video id="video" autoplay playsinline></video>
-            <div class="overlay">Scanning for Faces...</div>
-        </div>
-        
-        <div class="search">
-            <input type="text" id="searchBox" placeholder="Search by Name or ID..." onkeyup="filterResults()">
-        </div>
-        
-        <div class="detected-list">
-            <h2>📋 Detected Faces</h2>
-            <ul id="faceList">
-                <!-- Dynamically Generated List -->
-            </ul>
+        <div class="dashboard">
+            <div class="video-section">
+                <div class="video-container">
+                    <video id="video" autoplay playsinline></video>
+                    <div class="overlay">Real-time Face Detection Active</div>
+                    <canvas id="canvas" style="position: absolute; top: 0; left: 0;"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <button class="control-btn" id="toggleCamera">
+                        <span>📷</span> Toggle Camera
+                    </button>
+                    <button class="control-btn" id="toggleDetection">
+                        <span>👁️</span> Toggle Detection
+                    </button>
+                    <button class="control-btn" id="captureBtn">
+                        <span>📸</span> Capture
+                    </button>
+                </div>
+                
+                <div class="search">
+                    <input type="text" id="searchBox" placeholder="Search by Name, ID or Time...">
+                </div>
+            </div>
+            
+            <div class="stats-section">
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-label">Faces Detected</div>
+                        <div class="stat-value" id="facesCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Accuracy</div>
+                        <div class="stat-value">92%</div>
+                        <div class="confidence-meter">
+                            <div class="confidence-level"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Processing Time</div>
+                        <div class="stat-value">48ms</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Camera FPS</div>
+                        <div class="stat-value">30</div>
+                    </div>
+                </div>
+                
+                <div class="detected-list">
+                    <h2>📋 Detected Faces <span id="detectionCounter">(0)</span></h2>
+                    <ul id="faceList">
+                        <!-- Will be populated by JavaScript -->
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
+
+    <script src="body_logic.js"></script>
+    <script src="camra_access.js"></script>
 </body>
 </html>
