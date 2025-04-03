@@ -3,27 +3,722 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drone Flight Tracking</title>
-    <link rel="stylesheet" href="flight_tracking.css">
-    <script defer src="flight_tracking_logic.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+    <title>Drone Flight Path Tracking | Live Path Visualization</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00f7ff;
+            --secondary: #ff00aa;
+            --dark: #0a0a1a;
+            --darker: #050510;
+            --light: #e0e0ff;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff0055;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(0, 247, 255, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 80% 70%, rgba(255, 0, 170, 0.1) 0%, transparent 20%);
+        }
+
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 3rem;
+            background-color: var(--darker);
+            border-bottom: 1px solid var(--glass);
+            position: relative;
+            z-index: 10;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            box-shadow: 0 0 10px var(--primary), 0 0 20px var(--secondary);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 5px rgba(0, 247, 255, 0.3);
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1800px;
+            margin: 0 auto;
+            height: calc(100vh - 80px);
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+
+        .panel {
+            background: var(--glass);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass);
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 247, 255, 0.1), rgba(255, 0, 170, 0.1));
+            z-index: -1;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--glass);
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: var(--darker);
+            min-height: 500px;
+            position: relative;
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .map-btn {
+            background: var(--darker);
+            color: var(--light);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .map-btn:hover {
+            background: var(--primary);
+            color: var(--dark);
+            transform: translateY(-2px);
+        }
+
+        .drone-status {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0.8rem 1.2rem;
+            border-radius: 10px;
+            color: var(--light);
+            font-size: 0.9rem;
+            z-index: 1000;
+            border-left: 3px solid var(--primary);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.3rem 0;
+        }
+
+        .status-item i {
+            color: var(--primary);
+            width: 20px;
+            text-align: center;
+        }
+
+        #trackFlight {
+            background: linear-gradient(135deg, var(--primary), #0088ff);
+            color: var(--darker);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            width: 100%;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #trackFlight:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 247, 255, 0.4);
+        }
+
+        #flightList {
+            list-style: none;
+            max-height: 600px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) var(--darker);
+        }
+
+        #flightList::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #flightList::-webkit-scrollbar-track {
+            background: var(--darker);
+        }
+
+        #flightList::-webkit-scrollbar-thumb {
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
+
+        .flight-item {
+            background: var(--darker);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid var(--primary);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .flight-item:hover {
+            transform: translateX(5px);
+            background: rgba(0, 247, 255, 0.05);
+        }
+
+        .flight-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .flight-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .flight-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .flight-detail i {
+            color: var(--secondary);
+            font-size: 0.8rem;
+        }
+
+        .active-flight {
+            background: rgba(0, 247, 255, 0.1);
+            box-shadow: 0 0 10px rgba(0, 247, 255, 0.2);
+        }
+
+        .path-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--glass);
+        }
+
+        .path-stat {
+            text-align: center;
+        }
+
+        .path-stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .path-stat-label {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        /* Pulse animation for active tracking */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 247, 255, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 247, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 247, 255, 0); }
+        }
+
+        .tracking-active {
+            animation: pulse 2s infinite;
+            background: linear-gradient(135deg, var(--success), #00cc66);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .main-container {
+                padding: 1rem;
+                gap: 1rem;
+            }
+            
+            #map {
+                min-height: 400px;
+            }
+        }
+    </style>
 </head>
+
 <body>
     <header>
-        <h1>🚀 Drone Flight Path Tracking</h1>
-        <button id="darkModeToggle">🌙 Dark Mode</button>
+        <h1 class="orbitron"><i class="fas fa-location-crosshairs"></i> Drone Flight Path Tracking</h1>
+        <button id="darkModeToggle"><i class="fas fa-moon"></i> DARK MODE</button>
     </header>
-    
+
     <div class="main-container">
-        <div class="map-container">
-            <div id="map"></div>
-            <button id="trackFlight">📍 Start Tracking</button>
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title orbitron"><i class="fas fa-map-marked-alt"></i> LIVE PATH VISUALIZATION</h2>
+                <div class="connection-status">
+                    <span class="orbitron"><i class="fas fa-satellite"></i> GPS LOCK</span>
+                </div>
+            </div>
+            <div id="map">
+                <div class="map-controls">
+                    <button class="map-btn" id="zoomIn"><i class="fas fa-plus"></i></button>
+                    <button class="map-btn" id="zoomOut"><i class="fas fa-minus"></i></button>
+                    <button class="map-btn" id="centerMap"><i class="fas fa-crosshairs"></i></button>
+                </div>
+                <div class="drone-status">
+                    <div class="status-item">
+                        <i class="fas fa-drone"></i>
+                        <span>DRONE NX-725</span>
+                    </div>
+                    <div class="status-item">
+                        <i class="fas fa-battery-three-quarters"></i>
+                        <span>78% POWER</span>
+                    </div>
+                    <div class="status-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>12.4 M/S</span>
+                    </div>
+                    <div class="status-item">
+                        <i class="fas fa-mountain"></i>
+                        <span>86M ALTITUDE</span>
+                    </div>
+                </div>
+            </div>
+            <div class="path-info">
+                <div class="path-stat">
+                    <div class="path-stat-value orbitron" id="distance">3.2KM</div>
+                    <div class="path-stat-label">DISTANCE</div>
+                </div>
+                <div class="path-stat">
+                    <div class="path-stat-value orbitron" id="duration">00:07:32</div>
+                    <div class="path-stat-label">DURATION</div>
+                </div>
+                <div class="path-stat">
+                    <div class="path-stat-value orbitron" id="waypoints">14</div>
+                    <div class="path-stat-label">WAYPOINTS</div>
+                </div>
+            </div>
+            <button id="trackFlight">
+                <i class="fas fa-satellite"></i>
+                <span>ACTIVATE LIVE TRACKING</span>
+            </button>
         </div>
-        
-        <div class="flight-info">
-            <h2>📜 Flight History</h2>
-            <ul id="flightList"></ul>
+
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title orbitron"><i class="fas fa-history"></i> FLIGHT ARCHIVES</h2>
+                <div class="orbitron" style="font-size: 0.9rem;">
+                    <i class="fas fa-database"></i> <span id="flightCount">12</span> RECORDS
+                </div>
+            </div>
+            <ul id="flightList">
+                <!-- Flight items will be dynamically inserted here -->
+            </ul>
         </div>
     </div>
+
+    <script>
+        // Initialize dark mode toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                darkModeToggle.innerHTML = '<i class="fas fa-sun"></i> LIGHT MODE';
+            } else {
+                darkModeToggle.innerHTML = '<i class="fas fa-moon"></i> DARK MODE';
+            }
+        });
+
+        // Google Maps Initialization
+        let map;
+        let flightPath;
+        let droneMarker;
+        let pathCoordinates = [];
+        let simulationInterval;
+
+        function initMap() {
+            // Default to Los Angeles coordinates
+            const losAngeles = { lat: 34.0522, lng: -118.2437 };
+            
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 15,
+                center: losAngeles,
+                styles: [
+                    {
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#1d2c4d"
+                            }
+                        ]
+                    },
+                    {
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#8ec3b9"
+                            }
+                        ]
+                    },
+                    {
+                        "elementType": "labels.text.stroke",
+                        "stylers": [
+                            {
+                                "color": "#1a3646"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "administrative.country",
+                        "elementType": "geometry.stroke",
+                        "stylers": [
+                            {
+                                "color": "#4b6878"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "water",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#0e1626"
+                            }
+                        ]
+                    }
+                ]
+            });
+
+            // Create drone marker
+            droneMarker = new google.maps.Marker({
+                position: losAngeles,
+                map: map,
+                icon: {
+                    url: 'https://maps.google.com/mapfiles/kml/shapes/airports.png',
+                    scaledSize: new google.maps.Size(40, 40)
+                },
+                title: 'NX-725 Drone'
+            });
+
+            // Initialize flight path
+            flightPath = new google.maps.Polyline({
+                path: pathCoordinates,
+                geodesic: true,
+                strokeColor: '#00f7ff',
+                strokeOpacity: 1.0,
+                strokeWeight: 3,
+                icons: [{
+                    icon: {
+                        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                        strokeColor: '#ff00aa',
+                        scale: 3
+                    },
+                    offset: '100%',
+                    repeat: '100px'
+                }]
+            });
+
+            // Add map controls functionality
+            document.getElementById('zoomIn').addEventListener('click', () => {
+                map.setZoom(map.getZoom() + 1);
+            });
+
+            document.getElementById('zoomOut').addEventListener('click', () => {
+                map.setZoom(map.getZoom() - 1);
+            });
+
+            document.getElementById('centerMap').addEventListener('click', () => {
+                if (pathCoordinates.length > 0) {
+                    map.panTo(pathCoordinates[pathCoordinates.length - 1]);
+                } else {
+                    map.panTo(losAngeles);
+                }
+            });
+        }
+
+        // Simulate drone movement
+        function simulateFlight() {
+            // Start from current position or default to LA
+            let currentPosition = pathCoordinates.length > 0 ? 
+                pathCoordinates[pathCoordinates.length - 1] : 
+                { lat: 34.0522, lng: -118.2437 };
+            
+            // Generate random movement (in a real app, this would be actual telemetry data)
+            const latChange = (Math.random() - 0.5) * 0.001;
+            const lngChange = (Math.random() - 0.5) * 0.001;
+            
+            const newPosition = {
+                lat: currentPosition.lat + latChange,
+                lng: currentPosition.lng + lngChange
+            };
+            
+            pathCoordinates.push(newPosition);
+            flightPath.setPath(pathCoordinates);
+            droneMarker.setPosition(newPosition);
+            map.panTo(newPosition);
+            
+            // Update stats
+            updateTelemetry();
+        }
+
+        function updateTelemetry() {
+            // Update distance (simplified calculation)
+            const distance = (pathCoordinates.length * 0.012).toFixed(1);
+            document.getElementById('distance').textContent = `${distance}KM`;
+            
+            // Update waypoints
+            document.getElementById('waypoints').textContent = pathCoordinates.length;
+            
+            // Update battery (draining over time)
+            const batteryElement = document.querySelector('.drone-status .status-item:nth-child(2) span');
+            let battery = parseInt(batteryElement.textContent);
+            battery = Math.max(0, battery - 1);
+            batteryElement.textContent = `${battery}% POWER`;
+            
+            if (battery < 20) {
+                batteryElement.style.color = 'var(--danger)';
+            } else if (battery < 50) {
+                batteryElement.style.color = 'var(--warning)';
+            }
+        }
+
+        // Track flight button functionality
+        document.getElementById('trackFlight').addEventListener('click', function() {
+            const trackBtn = this;
+            
+            if (trackBtn.classList.contains('tracking-active')) {
+                // Stop tracking
+                clearInterval(simulationInterval);
+                trackBtn.classList.remove('tracking-active');
+                trackBtn.innerHTML = '<i class="fas fa-satellite"></i> ACTIVATE LIVE TRACKING';
+            } else {
+                // Start tracking
+                trackBtn.classList.add('tracking-active');
+                trackBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> TRACKING ACTIVE';
+                
+                // Clear previous path
+                pathCoordinates = [];
+                flightPath.setPath(pathCoordinates);
+                
+                // Start simulation
+                simulationInterval = setInterval(simulateFlight, 1000);
+                
+                // Add active flight to list
+                addActiveFlight();
+            }
+        });
+
+        // Sample flight data
+        const flightData = [
+            {
+                id: 'NX-724',
+                date: '2023-11-15',
+                duration: '00:42:18',
+                distance: '12.7 km',
+                maxAltitude: '125 m',
+                status: 'completed'
+            },
+            {
+                id: 'NX-723',
+                date: '2023-11-14',
+                duration: '01:05:42',
+                distance: '18.3 km',
+                maxAltitude: '150 m',
+                status: 'completed'
+            },
+            {
+                id: 'NX-722',
+                date: '2023-11-12',
+                duration: '00:28:56',
+                distance: '8.2 km',
+                maxAltitude: '95 m',
+                status: 'completed'
+            }
+        ];
+
+        // Populate flight list
+        const flightList = document.getElementById('flightList');
+        flightData.forEach(flight => {
+            const flightItem = document.createElement('li');
+            flightItem.className = 'flight-item';
+            flightItem.innerHTML = `
+                <div class="flight-header">
+                    <span class="orbitron">${flight.id}</span>
+                    <span>${flight.date}</span>
+                </div>
+                <div class="flight-details">
+                    <div class="flight-detail">
+                        <i class="fas fa-clock"></i>
+                        <span>${flight.duration}</span>
+                    </div>
+                    <div class="flight-detail">
+                        <i class="fas fa-route"></i>
+                        <span>${flight.distance}</span>
+                    </div>
+                    <div class="flight-detail">
+                        <i class="fas fa-mountain"></i>
+                        <span>${flight.maxAltitude}</span>
+                    </div>
+                    <div class="flight-detail">
+                        <i class="fas fa-${flight.status === 'completed' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                        <span>${flight.status.toUpperCase()}</span>
+                    </div>
+                </div>
+            `;
+            flightList.appendChild(flightItem);
+        });
+
+        function addActiveFlight() {
+            const activeFlight = {
+                id: 'NX-725',
+                date: new Date().toISOString().split('T')[0],
+                duration: '00:00:00',
+                distance: '0.0 km',
+                maxAltitude: '0 m',
+                status: 'active'
+            };
+            
+            const flightItem = document.createElement('li');
+            flightItem.className = 'flight-item active-flight';
+            flightItem.innerHTML = `
+                <div class="flight-header">
+                    <span class="orbitron">${activeFlight.id}</span>
+                    <span>${activeFlight.date}</span>
+                </div>
+                <div class="flight-details">
+                    <div class="flight-detail">
+                        <i class="fas fa-clock"></i>
+                        <span id="activeDuration">${activeFlight.duration}</span>
+                    </div>
+                    <div class="flight-detail">
+                        <i class="fas fa-route"></i>
+                        <span id="activeDistance">${activeFlight.distance}</span>
+                    </div>
+                    <div class="flight-detail">
+                        <i class="fas fa-mountain"></i>
+                        <span id="activeAltitude">${activeFlight.maxAltitude}</span>
+                    </div>
+                    <div class="flight-detail">
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                        <span>IN PROGRESS</span>
+                    </div>
+                </div>
+            `;
+            flightList.insertBefore(flightItem, flightList.firstChild);
+            
+            // Start updating active flight duration
+            let seconds = 0;
+            const durationInterval = setInterval(() => {
+                seconds++;
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = seconds % 60;
+                document.getElementById('activeDuration').textContent = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }, 1000);
+            
+            // Update flight count
+            document.getElementById('flightCount').textContent = flightData.length + 1;
+        }
+
+        // Initialize map when Google Maps API is loaded
+        window.initMap = initMap;
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
 </body>
 </html>
