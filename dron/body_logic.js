@@ -16,10 +16,10 @@ let stream = null;
 let isDetectionActive = true;
 let detectionInterval = null;
 let detectionHistory = [];
+let isCameraOn = false;
 
 // Sample database of known faces
 const knownFaces = [
-
     { id: 'EMP003', name: 'Shivam Raj', role: 'Manager', avatar: 'photos/shivam.jpeg' },
     { id: 'EMP004', name: 'Ankit Anurag', role: 'HR', avatar: 'photos/ankit.jpeg' },
     { id: 'EMP005', name: 'Pintu Kumar', role: 'CEO', avatar: 'photos/pintu.jpeg' }
@@ -28,12 +28,18 @@ const knownFaces = [
 // Initialize camera
 async function initCamera() {
     try {
+        // Stop existing stream if any
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+        
         stream = await navigator.mediaDevices.getUserMedia({ 
             video: { width: 1280, height: 720, facingMode: 'user' } 
         });
         video.srcObject = stream;
         liveStatus.textContent = '● LIVE';
         liveStatus.style.color = '#4caf50';
+        isCameraOn = true;
         
         // Start face detection simulation
         startDetectionSimulation();
@@ -41,6 +47,7 @@ async function initCamera() {
         console.error("Camera error:", err);
         liveStatus.textContent = '● OFFLINE';
         liveStatus.style.color = '#f44336';
+        isCameraOn = false;
         alert("Could not access the camera. Please check permissions.");
     }
 }
@@ -50,22 +57,20 @@ function startDetectionSimulation() {
     if (detectionInterval) clearInterval(detectionInterval);
     
     detectionInterval = setInterval(() => {
-        if (!isDetectionActive) return;
+        if (!isDetectionActive || !isCameraOn) return;
         
-        // Randomly decide if we should detect a face (60% chance)
         if (Math.random() > 0.4) {
             const randomFace = knownFaces[Math.floor(Math.random() * knownFaces.length)];
             const now = new Date();
             const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
-            // Add to detection history if not already detected in the last 10 seconds
             const lastDetection = detectionHistory.find(d => d.id === randomFace.id);
             if (!lastDetection || (now - new Date(lastDetection.timestamp)) > 10000) {
                 const detection = {
                     ...randomFace,
                     timestamp: now.toISOString(),
                     displayTime: timeString,
-                    confidence: Math.floor(Math.random() * 20) + 80 // 80-99%
+                    confidence: Math.floor(Math.random() * 20) + 80
                 };
                 
                 detectionHistory.unshift(detection);
@@ -117,16 +122,21 @@ function filterResults() {
 
 // Toggle camera on/off
 function toggleCamera() {
-    if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        video.srcObject = null;
-        stream = null;
+    if (isCameraOn) {
+        // Stop camera
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+            stream = null;
+        }
         liveStatus.textContent = '● OFFLINE';
         liveStatus.style.color = '#f44336';
         clearInterval(detectionInterval);
         detectionInterval = null;
+        isCameraOn = false;
         toggleCameraBtn.innerHTML = '<span>📷</span> Start Camera';
     } else {
+        // Start camera
         initCamera();
         toggleCameraBtn.innerHTML = '<span>📷</span> Stop Camera';
     }
@@ -139,22 +149,38 @@ function toggleDetection() {
         '<span>👁️</span> Pause Detection' : 
         '<span>👁️</span> Resume Detection';
     
-    if (isDetectionActive && stream && !detectionInterval) {
+    if (isDetectionActive && isCameraOn && !detectionInterval) {
         startDetectionSimulation();
     }
 }
 
 // Capture current frame
 function captureFrame() {
-    if (!stream) return;
+    if (!isCameraOn) {
+        alert('Please start the camera first!');
+        return;
+    }
     
-    canvas.width = 786.67 ;
+    // Temporarily pause detection
+    const wasDetectionActive = isDetectionActive;
+    isDetectionActive = false;
+    
+    // Capture frame
+    canvas.width = 786.67;
     canvas.height = 450;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     
-    // In a real app, you would process the frame for face detection
-    alert('Frame captured! Processing would happen here in a real application.');
+    // Process the frame (simulated)
+    setTimeout(() => {
+        alert('Frame captured!');
+        
+        // Restore detection state
+        isDetectionActive = wasDetectionActive;
+        if (isDetectionActive && isCameraOn) {
+            startDetectionSimulation();
+        }
+    }, 100);
 }
 
 // Event listeners
@@ -165,9 +191,11 @@ searchBox.addEventListener('keyup', filterResults);
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
-    initCamera();
+    // Initial state
+    isCameraOn = false;
+    toggleCameraBtn.innerHTML = '<span>📷</span> Start Camera';
     
-    // Simulate some initial detections
+    // Simulate some initial detections for demo
     setTimeout(() => {
         const now = new Date();
         knownFaces.forEach((face, i) => {
