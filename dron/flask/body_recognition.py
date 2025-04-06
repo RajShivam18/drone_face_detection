@@ -79,4 +79,6 @@ def update_face(face_id):
     return render_template('body_recognition.html', face=face)
 
 if __name__ == "__main__":
+    with app.app_context():  # ✅ This creates the database & tables
+        db.create_all()
     app.run(debug=True)
